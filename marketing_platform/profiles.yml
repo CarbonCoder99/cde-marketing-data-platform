@@ -1,0 +1,82 @@
+marketing_platform:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+
+    
+    dev:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      token: "{{ env_var('DATABRICKS_PAT_TOKEN') }}"
+      catalog: "{{ env_var('DEV_CATALOG', 'ci_development') }}"
+      schema: "{{ env_var('DEV_SCHEMA', 'dbt_dev') }}"
+      threads: 4
+
+    
+    ci:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      auth_type: oauth
+      client_id: "{{ env_var('DBX_ID_APPLICATION_ID') }}"
+      client_secret: "{{ env_var('DBX_SECRET') }}"
+      catalog: ci_development
+      schema: "{{ env_var('DBT_SCHEMA', 'PR_LOCAL') }}"
+      threads: 4
+
+    
+    staging:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      auth_type: oauth
+      client_id: "{{ env_var('DBX_ID_APPLICATION_ID') }}"
+      client_secret: "{{ env_var('DBX_SECRET') }}"
+      catalog: silver_staging
+      schema: staging
+      threads: 4
+
+    
+    production:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      auth_type: oauth
+      client_id: "{{ env_var('DBX_ID_APPLICATION_ID') }}"
+      client_secret: "{{ env_var('DBX_SECRET') }}"
+      catalog: silver_production
+      schema: staging
+      threads: 8
+
+
+elementary:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      token: "{{ env_var('DATABRICKS_PAT_TOKEN') }}"
+      catalog: "{{ env_var('DEV_CATALOG', 'ci_development') }}"
+      schema: "{{ env_var('DEV_SCHEMA', 'dbt_dev') }}"
+      threads: 4
+    staging:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      auth_type: oauth
+      client_id: "{{ env_var('DBX_ID_APPLICATION_ID') }}"
+      client_secret: "{{ env_var('DBX_SECRET') }}"
+      catalog: silver_staging
+      schema: elementary
+      threads: 4
+    production:
+      type: databricks
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DATABRICKS_HTTP_PATH') }}"
+      auth_type: oauth
+      client_id: "{{ env_var('DBX_ID_APPLICATION_ID') }}"
+      client_secret: "{{ env_var('DBX_SECRET') }}"
+      catalog: silver_production
+      schema: elementary
+      threads: 4
