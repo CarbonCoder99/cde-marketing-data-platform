@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+  - name: snapchat_ads
+    description: >
+      Snapchat Ads exports, loaded manually from CSV files into Databricks.
+      Covers 2024-01-01 to 2024-12-02. All amounts are in EUR. There is no Snapchat account table,
+      so currency is stored on each stats row.
+    database: bronze_production
+    schema: cdc_staging
+    tables:
+      - name: stats
+        identifier: snapchat_ads_stats
+        description: "Daily performance per ad and country: spend, impressions and clicks."
+      - name: ads
+        identifier: snapchat_ads_ads
+        description: "Ads, each pointing to an ad group."
+      - name: ad_groups
+        identifier: snapchat_ads_ad_groups
+        description: "Ad group history. An ad group can appear several times, once per version."
+      - name: campaigns
+        identifier: snapchat_ads_campaigns
+        description: "Campaigns, each pointing to a Snapchat account."

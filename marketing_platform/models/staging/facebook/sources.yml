@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: facebook_ads
+    description: >
+      Facebook Ads exports, loaded manually from CSV files into Databricks.
+      Covers 2025-01-01 to 2025-12-31. Amounts are in each ad account's own currency (EUR or USD).
+    database: bronze_production
+    schema: cdc_staging
+    tables:
+      - name: stats
+        identifier: facebook_ads_stats
+        description: "Daily performance per ad: spend, impressions and clicks. Missing numbers are stored as the text 'null'."
+      - name: accounts
+        identifier: facebook_ads_accounts
+        description: "Ad accounts with their currency."
+      - name: campaigns
+        identifier: facebook_ads_campaigns
+        description: "Campaign names."
+      - name: ad_groups
+        identifier: facebook_ads_ad_groups
+        description: "Ad group (ad set) names."
+      - name: ads
+        identifier: facebook_ads
+        description: "Ads, linking each ad to its campaign, ad group and account."
