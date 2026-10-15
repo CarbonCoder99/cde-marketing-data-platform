@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+target/
+dbt_packages/
+logs/
+edr_target/
+.env
+set_env.sh
+set_env.ps1
+.DS_Store
