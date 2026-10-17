@@ -36,6 +36,10 @@ jobs:
 
       - name: Build and test staging
         run: dbt build
+      
+      - name: Run Elementary models to populate tracking tables
+        if: always()
+        run: dbt run --select elementary --target staging
 
       - name: Generate Elementary report
         if: always()
