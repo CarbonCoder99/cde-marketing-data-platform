@@ -89,6 +89,9 @@ models:
       Main table for analysts, BI tools and AI agents.
       Grain: one row per platform, campaign, day and currency.
       Ratios are calculated from summed numbers, never averaged.
+    data_tests:
+      - elementary.volume_anomalies
+      - elementary.schema_changes
     columns:
       - name: campaign_day_key
         description: "Surrogate key of platform + campaign_id + ad_date + currency_code."
