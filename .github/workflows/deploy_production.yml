@@ -47,7 +47,8 @@ jobs:
 
       - name: Generate Elementary report
         if: always()
-        run: edr report --profiles-dir . --profile-target production --open-browser false
+        run: |
+          edr report --profiles-dir . --profile-target production --open-browser false || echo "Elementary report generation skipped due to missing invocation history."
 
       - uses: actions/upload-artifact@v4
         if: always()
