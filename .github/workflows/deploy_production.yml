@@ -44,6 +44,10 @@ jobs:
       - name: Generate dbt docs
         if: always()
         run: dbt docs generate --static
+      
+      - name: Run Elementary models to populate tracking tables
+        if: always()
+        run: dbt run --select elementary --target production
 
       - name: Generate Elementary report
         if: always()
