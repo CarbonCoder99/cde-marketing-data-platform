@@ -1,0 +1,14 @@
+version: 2
+
+seeds:
+  - name: fx_rates_to_eur
+    description: >
+      Currency conversion table. One row per currency with the rate that converts 1 unit of that
+      currency into euros. Maintained by hand; see the source column for where each rate came from.
+    columns:
+      - name: currency_code
+        description: "ISO currency code."
+        data_tests: [unique, not_null]
+      - name: rate_to_eur
+        description: "Multiply an amount in currency_code by this number to get euros."
+        data_tests: [not_null]

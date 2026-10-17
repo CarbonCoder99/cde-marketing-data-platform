@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: stg_facebook_ads_stats
+    description: >
+      Cleaned Facebook Ads daily performance.
+      Grain: one row per Facebook ad per day.
+      Source: facebook_ads.stats. Facebook exports no country, so country_code is NULL.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ad_id, ad_date]
+    columns:
+      - name: platform
+        description: "Always 'facebook' in this model."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['facebook']
+      - name: ad_id
+        description: "Facebook ad ID, cast to string so it matches Snapchat's ID type."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_facebook_ads')
+                field: ad_id
+      - name: ad_date
+        description: "Calendar day the performance belongs to."
+        data_tests:
+          - not_null
+      - name: spend
+        description: "Money spent that day, in the currency of the ad account."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+      - name: impressions
+        description: "Times the ad was shown. NULL when the source says 'null' (only on zero-spend days)."
+      - name: clicks
+        description: "Clicks on the ad. NULL when the source says 'null' (usually means zero)."
+
+  - name: stg_facebook_ads_accounts
+    description: "Facebook ad accounts. Grain: one row per account. Holds the currency of the account."
+    columns:
+      - name: account_id
+        description: "Facebook ad account ID (string)."
+        data_tests: [unique, not_null]
+      - name: currency_code
+        description: "ISO currency code of the account, upper-case."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['EUR', 'USD']
+
+  - name: stg_facebook_ads_campaigns
+    description: "Facebook campaigns. Grain: one row per campaign."
+    columns:
+      - name: campaign_id
+        data_tests: [unique, not_null]
+
+  - name: stg_facebook_ads_ad_groups
+    description: "Facebook ad sets (called ad groups here). Grain: one row per ad group."
+    columns:
+      - name: ad_group_id
+        data_tests: [unique, not_null]
+
+  - name: stg_facebook_ads
+    description: "Facebook ads. Grain: one row per ad. Links an ad to its campaign, ad group and account."
+    columns:
+      - name: ad_id
+        data_tests: [unique, not_null]
+      - name: campaign_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_facebook_ads_campaigns')
+                field: campaign_id
+      - name: ad_group_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_facebook_ads_ad_groups')
+                field: ad_group_id
+      - name: account_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_facebook_ads_accounts')
+                field: account_id

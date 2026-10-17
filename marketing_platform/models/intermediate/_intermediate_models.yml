@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: int_facebook_ads_details
+    description: >
+      Facebook ad attributes in one place: ad, ad group, campaign, account and account currency.
+      Grain: one row per Facebook ad.
+    columns:
+      - name: ad_id
+        data_tests: [unique, not_null]
+      - name: currency_code
+        description: "Currency of the ad account the ad belongs to."
+        data_tests: [not_null]
+
+  - name: int_snapchat_ads_details
+    description: >
+      Snapchat ad attributes in one place: ad, ad group (latest version only), campaign and account.
+      Grain: one row per Snapchat ad.
+      Keeping only the latest ad group version prevents duplicated spend in later joins.
+    columns:
+      - name: ad_id
+        data_tests: [unique, not_null]
+
+  - name: int_marketing_ads_daily
+    description: >
+      Facebook and Snapchat daily performance stacked into one shape, with ad, ad group, campaign
+      and account attached. Grain: one row per platform, ad, day and country
+      (country is NULL for Facebook). Amounts are still in each account's own currency.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [platform, ad_id, ad_date, country_code]
+    columns:
+      - name: platform
+        description: "Advertising platform: facebook or snapchat."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['facebook', 'snapchat']
+      - name: campaign_id
+        description: "Platform campaign ID (string). Only unique together with platform."
+        data_tests: [not_null]
+      - name: account_id
+        data_tests: [not_null]
+      - name: currency_code
+        data_tests: [not_null]

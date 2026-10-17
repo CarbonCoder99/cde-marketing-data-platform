@@ -5,8 +5,8 @@ sources:
     description: >
       Facebook Ads exports, loaded manually from CSV files into Databricks.
       Covers 2025-01-01 to 2025-12-31. Amounts are in each ad account's own currency (EUR or USD).
-    database: bronze_production
-    schema: cdc_staging
+    database: cde_bronze_production
+    schema: cde_staging
     tables:
       - name: stats
         identifier: facebook_ads_stats

@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: stg_snapchat_ads_stats
+    description: >
+      Cleaned Snapchat Ads daily performance.
+      Grain: one row per Snapchat ad per day per country.
+      The same ad and day can appear once for each country, so (ad_id, ad_date) alone is NOT unique.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ad_id, ad_date, country_code]
+    columns:
+      - name: platform
+        description: "Always 'snapchat' in this model."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['snapchat']
+      - name: ad_id
+        description: "Snapchat ad ID (UUID). Called ad_detail_id in the source."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_snapchat_ads')
+                field: ad_id
+      - name: ad_date
+        data_tests: [not_null]
+      - name: country_code
+        description: "Two-letter country the ads were shown in, upper-case."
+        data_tests: [not_null]
+      - name: currency_code
+        description: "Currency of spend. Snapchat has no account table, so it lives on each row."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['EUR', 'USD']
+      - name: spend
+        description: "Money spent, in currency_code."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+      - name: impressions
+        description: "Times the ad was shown."
+      - name: clicks
+        description: "Clicks on the ad. NULL when the source says 'null' (usually means zero)."
+
+  - name: stg_snapchat_ads
+    description: "Snapchat ads. Grain: one row per ad."
+    columns:
+      - name: ad_id
+        data_tests: [unique, not_null]
+      - name: ad_group_id
+        description: >
+          Some ads point to ad groups that are missing from the export. This does not affect
+          the ads that have stats, so the check only warns.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_snapchat_ads_ad_groups')
+                field: ad_group_id
+              config:
+                severity: warn
+
+  - name: stg_snapchat_ads_ad_groups
+    description: >
+      Snapchat ad groups, history table. Grain: one row per ad group VERSION.
+      An ad group can appear more than once with different updated_at values.
+      The intermediate layer keeps only the latest version.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ad_group_id, updated_at]
+    columns:
+      - name: ad_group_id
+        data_tests: [not_null]
+      - name: campaign_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_snapchat_ads_campaigns')
+                field: campaign_id
+
+  - name: stg_snapchat_ads_campaigns
+    description: "Snapchat campaigns. Grain: one row per campaign. account_id is the Snapchat account UUID."
+    columns:
+      - name: campaign_id
+        data_tests: [unique, not_null]
