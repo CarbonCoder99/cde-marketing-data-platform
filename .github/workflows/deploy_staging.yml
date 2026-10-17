@@ -1,0 +1,48 @@
+name: Deploy to staging
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: marketing_platform
+    env:
+      DBT_TARGET: staging
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+      DBX_ID_APPLICATION_ID: ${{ secrets.DBX_ID_APPLICATION_ID }}
+      DBX_SECRET: ${{ secrets.DBX_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r ../requirements.txt
+
+      - run: dbt deps
+      - run: dbt debug
+
+      - name: Build and test staging
+        run: dbt build
+
+      - name: Generate Elementary report
+        if: always()
+        run: edr report --profiles-dir . --profile-target staging --open-browser false
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: elementary-report-staging
+          path: marketing_platform/edr_target/elementary_report.html
